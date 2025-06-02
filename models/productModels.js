@@ -6,9 +6,9 @@ const productSchema = mongoose.Schema(
       type: String,
       required: [true, "Please enter product name.."],
     },
-    quantity: {
+    category: {
       type: String,
-      required: [true, "Please enter product quantity"],
+      required: [true, "Please enter product Category.."],
       default: 0,
     },
     price: {
