@@ -24,7 +24,7 @@ const cors = require("cors");
 // Mounting middleware for Avoiding Cross Origin Resource Conflicts
 app.use(cors());
 
-// Mounting middleware for seamless JSON data exchange
+// Mounting middleware for seamless JSON data exchange, we dont need bodyParser
 app.use(express.json());
 
 // Mounting middleware for accepting data through a form submission
@@ -34,15 +34,12 @@ app.use(
   })
 );
 
-// Establish a connection qwith MongoDB
+// Establish a connection with MongoDB
 
 const connectMongo = async () => {
   try {
     await mongoose.connect(mongo_uri_remote).then(() => {
       console.log("Successfully Connected to MongoDB Database...");
-      app.listen(PORT, () => {
-        console.log(`Server listening to PORT : ${PORT}`);
-      });
     });
   } catch (error) {
     console.log(`Error connecting to DB... ${error}`);
@@ -50,6 +47,15 @@ const connectMongo = async () => {
 };
 connectMongo();
 
+// AUTH ROUTER
+const authRouter = require('./Routes/AuthRouter');
+app.use('/auth', authRouter);
+
+// productsRouter for authenticated API using JWT
+const productsRouter = require('./Routes/productsRouter')
+app.use('/api/items', productsRouter);
+
+// CRUD API END POINTS
 app.post("/products", async (req, res) => {
   try {
     const product = await Product.create(req.body);
@@ -69,8 +75,8 @@ app.get("/products", async (req, res) => {
   try {
     const products = await Product.find({});
     res.status(200).json({
-        message : "Products Fetched successfully...",
-        products
+      message: "Products Fetched successfully...",
+      products,
     });
   } catch (error) {
     res.status(500).json({
@@ -84,8 +90,8 @@ app.get("/products/:id", async (req, res) => {
     const { id } = req.params;
     const product = await Product.findById(id);
     res.status(200).json({
-        message : "Product Fetched successfully...",
-        product
+      message: "Product Fetched successfully...",
+      product,
     });
   } catch (error) {
     res.status(500).json({
@@ -106,7 +112,7 @@ app.put("/products/:id", async (req, res) => {
     const updatedProduct = await Product.findById(id);
     res.status(200).json({
       message: `Product updated successfully`,
-      updatedProduct
+      updatedProduct,
     });
   } catch (error) {
     res.status({
@@ -134,5 +140,14 @@ app.delete("/products/:id", async (req, res) => {
     res.status(500).json({
       message: error.message,
     });
+  }
+});
+
+app.listen(PORT, (error) => {
+  if(error){
+    console.error("Error Connecting to Database",error)
+  }
+  else{
+    console.log(`Server listening to PORT : ${PORT}`);
   }
 });
